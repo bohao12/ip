@@ -5,6 +5,7 @@ import java.util.Scanner;
  * Manages user interactions and task list operations.
  */
 public class Yao {
+    private static final int MAX_TASKS = 100;
 
     public static void main(String[] args) {
         String line = "____________________________________________________________";
@@ -21,7 +22,7 @@ public class Yao {
         System.out.println(line);
 
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[100];
+        Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
 
         while (true) {
