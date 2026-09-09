@@ -1,4 +1,4 @@
-package yao;
+package yao.task;
 
 /**
  * Represents an event task with a start time and an end time.

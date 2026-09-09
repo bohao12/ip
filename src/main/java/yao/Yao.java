@@ -1,6 +1,10 @@
 package yao;
 
 import java.util.Scanner;
+import yao.task.Deadline;
+import yao.task.Event;
+import yao.task.Task;
+import yao.task.Todo;
 
 /**
  * Main class for the Yao chatbot application.
