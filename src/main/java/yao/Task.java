@@ -1,3 +1,5 @@
+package yao;
+
 /**
  * Represents a generic task with a description and completion status.
  * Serves as the superclass for specific task types such as Todo, Deadline, and Event.
@@ -10,7 +12,7 @@ public class Task {
      * Constructs a Task with the specified description.
      * Newly created tasks are incomplete by default.
      *
-     * @param description The description of the task.
+     * @param description Description of the task.
      */
     public Task(String description) {
         this.description = description;
@@ -23,7 +25,7 @@ public class Task {
      * @return "X" if done, or " " if incomplete.
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " ");
+        return isDone ? "X" : " ";
     }
 
     /**
