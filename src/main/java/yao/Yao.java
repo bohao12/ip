@@ -1,5 +1,6 @@
 package yao;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 import yao.task.Deadline;
 import yao.task.Event;
@@ -11,7 +12,6 @@ import yao.task.Todo;
  * Manages user interactions and task list operations.
  */
 public class Yao {
-    private static final int MAX_TASKS = 100;
     private static final String BORDER_LINE = "____________________________________________________________";
     private static final String BANNER = " __   __            \n"
             + " \\ \\ / /_ _  ___   \n"
@@ -32,8 +32,7 @@ public class Yao {
         System.out.println(BORDER_LINE);
 
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         while (true) {
             String command = scanner.nextLine();
@@ -45,30 +44,36 @@ public class Yao {
                 break;
             } else if (command.equals("list")) {
                 System.out.println("Here are the tasks in your list:");
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + "." + tasks[i]);
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println((i + 1) + "." + tasks.get(i));
                 }
                 System.out.println(BORDER_LINE);
             } else if (command.startsWith("mark ")) {
                 int taskIndex = Integer.parseInt(command.substring(5).trim()) - 1;
-                tasks[taskIndex].markAsDone();
+                tasks.get(taskIndex).markAsDone();
                 System.out.println("Nice! I've marked this task as done:");
-                System.out.println("  " + tasks[taskIndex]);
+                System.out.println("  " + tasks.get(taskIndex));
                 System.out.println(BORDER_LINE);
             } else if (command.startsWith("unmark ")) {
                 int taskIndex = Integer.parseInt(command.substring(7).trim()) - 1;
-                tasks[taskIndex].markAsUndone();
+                tasks.get(taskIndex).markAsUndone();
                 System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("  " + tasks[taskIndex]);
+                System.out.println("  " + tasks.get(taskIndex));
+                System.out.println(BORDER_LINE);
+            } else if (command.startsWith("delete ")) {
+                int taskIndex = Integer.parseInt(command.substring(7).trim()) - 1;
+                Task removedTask = tasks.remove(taskIndex);
+                System.out.println("Noted. I've removed this task:");
+                System.out.println("  " + removedTask);
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(BORDER_LINE);
             } else if (command.startsWith("todo ")) {
                 String description = command.substring(5).trim();
                 Task newTask = new Todo(description);
-                tasks[taskCount] = newTask;
-                taskCount++;
+                tasks.add(newTask);
                 System.out.println("Got it. I've added this task:");
                 System.out.println("  " + newTask);
-                System.out.println("Now you have " + taskCount + " tasks in the list.");
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(BORDER_LINE);
             } else if (command.startsWith("deadline ")) {
                 String details = command.substring(9).trim();
@@ -76,11 +81,10 @@ public class Yao {
                 String description = parts[0];
                 String by = parts.length > 1 ? parts[1] : "";
                 Task newTask = new Deadline(description, by);
-                tasks[taskCount] = newTask;
-                taskCount++;
+                tasks.add(newTask);
                 System.out.println("Got it. I've added this task:");
                 System.out.println("  " + newTask);
-                System.out.println("Now you have " + taskCount + " tasks in the list.");
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(BORDER_LINE);
             } else if (command.startsWith("event ")) {
                 String details = command.substring(6).trim();
@@ -94,15 +98,14 @@ public class Yao {
                     to = timeParts.length > 1 ? timeParts[1] : "";
                 }
                 Task newTask = new Event(description, from, to);
-                tasks[taskCount] = newTask;
-                taskCount++;
+                tasks.add(newTask);
                 System.out.println("Got it. I've added this task:");
                 System.out.println("  " + newTask);
-                System.out.println("Now you have " + taskCount + " tasks in the list.");
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(BORDER_LINE);
             } else {
-                tasks[taskCount] = new Task(command);
-                taskCount++;
+                Task newTask = new Task(command);
+                tasks.add(newTask);
                 System.out.println("added: " + command);
                 System.out.println(BORDER_LINE);
             }
