@@ -47,82 +47,136 @@ public class Yao {
             String command = scanner.nextLine();
             System.out.println(BORDER_LINE);
 
-            if (command.equals("bye")) {
-                System.out.println("Bye. Hope to see you again soon!");
-                System.out.println(BORDER_LINE);
-                break;
-            } else if (command.equals("list")) {
-                System.out.println("Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println((i + 1) + "." + tasks.get(i));
-                }
-                System.out.println(BORDER_LINE);
-            } else if (command.startsWith("mark ")) {
-                int taskIndex = Integer.parseInt(command.substring(5).trim()) - 1;
-                tasks.get(taskIndex).markAsDone();
-                saveTasks(tasks);
-                System.out.println("Nice! I've marked this task as done:");
-                System.out.println("  " + tasks.get(taskIndex));
-                System.out.println(BORDER_LINE);
-            } else if (command.startsWith("unmark ")) {
-                int taskIndex = Integer.parseInt(command.substring(7).trim()) - 1;
-                tasks.get(taskIndex).markAsUndone();
-                saveTasks(tasks);
-                System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("  " + tasks.get(taskIndex));
-                System.out.println(BORDER_LINE);
-            } else if (command.startsWith("delete ")) {
-                int taskIndex = Integer.parseInt(command.substring(7).trim()) - 1;
-                Task removedTask = tasks.remove(taskIndex);
-                saveTasks(tasks);
-                System.out.println("Noted. I've removed this task:");
-                System.out.println("  " + removedTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(BORDER_LINE);
-            } else if (command.startsWith("todo ")) {
-                String description = command.substring(5).trim();
-                Task newTask = new Todo(description);
-                tasks.add(newTask);
-                saveTasks(tasks);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  " + newTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(BORDER_LINE);
-            } else if (command.startsWith("deadline ")) {
-                String details = command.substring(9).trim();
-                String[] parts = details.split(" /by ", 2);
-                String description = parts[0];
-                String by = parts.length > 1 ? parts[1] : "";
-                Task newTask = new Deadline(description, by);
-                tasks.add(newTask);
-                saveTasks(tasks);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  " + newTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(BORDER_LINE);
-            } else if (command.startsWith("event ")) {
-                String details = command.substring(6).trim();
-                String[] parts = details.split(" /from ", 2);
-                String description = parts[0];
-                String from = "";
-                String to = "";
-                if (parts.length > 1) {
+            try {
+                if (command.equals("bye")) {
+                    System.out.println("Bye. Hope to see you again soon!");
+                    System.out.println(BORDER_LINE);
+                    break;
+                } else if (command.equals("list")) {
+                    System.out.println("Here are the tasks in your list:");
+                    for (int i = 0; i < tasks.size(); i++) {
+                        System.out.println((i + 1) + "." + tasks.get(i));
+                    }
+                    System.out.println(BORDER_LINE);
+                } else if (command.equals("mark") || command.startsWith("mark ")) {
+                    String arg = command.substring(4).trim();
+                    if (arg.isEmpty()) {
+                        throw new YaoException("OOPS!!! Please specify which task number to mark.");
+                    }
+                    try {
+                        int taskIndex = Integer.parseInt(arg) - 1;
+                        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                            throw new YaoException("OOPS!!! Task number is out of range.");
+                        }
+                        tasks.get(taskIndex).markAsDone();
+                        saveTasks(tasks);
+                        System.out.println("Nice! I've marked this task as done:");
+                        System.out.println("  " + tasks.get(taskIndex));
+                        System.out.println(BORDER_LINE);
+                    } catch (NumberFormatException e) {
+                        throw new YaoException("OOPS!!! Task index must be a valid number.");
+                    }
+                } else if (command.equals("unmark") || command.startsWith("unmark ")) {
+                    String arg = command.substring(6).trim();
+                    if (arg.isEmpty()) {
+                        throw new YaoException("OOPS!!! Please specify which task number to unmark.");
+                    }
+                    try {
+                        int taskIndex = Integer.parseInt(arg) - 1;
+                        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                            throw new YaoException("OOPS!!! Task number is out of range.");
+                        }
+                        tasks.get(taskIndex).markAsUndone();
+                        saveTasks(tasks);
+                        System.out.println("OK, I've marked this task as not done yet:");
+                        System.out.println("  " + tasks.get(taskIndex));
+                        System.out.println(BORDER_LINE);
+                    } catch (NumberFormatException e) {
+                        throw new YaoException("OOPS!!! Task index must be a valid number.");
+                    }
+                } else if (command.equals("delete") || command.startsWith("delete ")) {
+                    String arg = command.substring(6).trim();
+                    if (arg.isEmpty()) {
+                        throw new YaoException("OOPS!!! Please specify which task number to delete.");
+                    }
+                    try {
+                        int taskIndex = Integer.parseInt(arg) - 1;
+                        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                            throw new YaoException("OOPS!!! Task number is out of range.");
+                        }
+                        Task removedTask = tasks.remove(taskIndex);
+                        saveTasks(tasks);
+                        System.out.println("Noted. I've removed this task:");
+                        System.out.println("  " + removedTask);
+                        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println(BORDER_LINE);
+                    } catch (NumberFormatException e) {
+                        throw new YaoException("OOPS!!! Task index must be a valid number.");
+                    }
+                } else if (command.equals("todo") || command.startsWith("todo ")) {
+                    String description = command.substring(4).trim();
+                    if (description.isEmpty()) {
+                        throw new YaoException("OOPS!!! The description of a todo cannot be empty.");
+                    }
+                    Task newTask = new Todo(description);
+                    tasks.add(newTask);
+                    saveTasks(tasks);
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println("  " + newTask);
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                    System.out.println(BORDER_LINE);
+                } else if (command.equals("deadline") || command.startsWith("deadline ")) {
+                    String details = command.substring(8).trim();
+                    if (details.isEmpty()) {
+                        throw new YaoException("OOPS!!! The description of a deadline cannot be empty.");
+                    }
+                    String[] parts = details.split(" /by ", 2);
+                    String description = parts[0].trim();
+                    if (description.isEmpty()) {
+                        throw new YaoException("OOPS!!! The description of a deadline cannot be empty.");
+                    }
+                    if (parts.length < 2 || parts[1].trim().isEmpty()) {
+                        throw new YaoException("OOPS!!! The deadline must specify a /by time.");
+                    }
+                    String by = parts[1].trim();
+                    Task newTask = new Deadline(description, by);
+                    tasks.add(newTask);
+                    saveTasks(tasks);
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println("  " + newTask);
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                    System.out.println(BORDER_LINE);
+                } else if (command.equals("event") || command.startsWith("event ")) {
+                    String details = command.substring(5).trim();
+                    if (details.isEmpty()) {
+                        throw new YaoException("OOPS!!! The description of an event cannot be empty.");
+                    }
+                    String[] parts = details.split(" /from ", 2);
+                    String description = parts[0].trim();
+                    if (description.isEmpty()) {
+                        throw new YaoException("OOPS!!! The description of an event cannot be empty.");
+                    }
+                    if (parts.length < 2) {
+                        throw new YaoException("OOPS!!! An event must specify both /from and /to times.");
+                    }
                     String[] timeParts = parts[1].split(" /to ", 2);
-                    from = timeParts[0];
-                    to = timeParts.length > 1 ? timeParts[1] : "";
+                    String from = timeParts[0].trim();
+                    if (from.isEmpty() || timeParts.length < 2 || timeParts[1].trim().isEmpty()) {
+                        throw new YaoException("OOPS!!! An event must specify both /from and /to times.");
+                    }
+                    String to = timeParts[1].trim();
+                    Task newTask = new Event(description, from, to);
+                    tasks.add(newTask);
+                    saveTasks(tasks);
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println("  " + newTask);
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                    System.out.println(BORDER_LINE);
+                } else {
+                    throw new YaoException("OOPS!!! I'm sorry, but I don't know what that means :-(");
                 }
-                Task newTask = new Event(description, from, to);
-                tasks.add(newTask);
-                saveTasks(tasks);
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  " + newTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(BORDER_LINE);
-            } else {
-                Task newTask = new Task(command);
-                tasks.add(newTask);
-                saveTasks(tasks);
-                System.out.println("added: " + command);
+            } catch (YaoException e) {
+                System.out.println(" " + e.getMessage());
                 System.out.println(BORDER_LINE);
             }
         }
