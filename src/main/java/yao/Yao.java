@@ -1,6 +1,5 @@
 package yao;
 
-import java.util.ArrayList;
 import yao.task.Deadline;
 import yao.task.Event;
 import yao.task.Task;
@@ -15,6 +14,7 @@ public class Yao {
 
     private final Storage storage;
     private final Ui ui;
+    private TaskList tasks;
 
     /**
      * Initializes the Yao application with a specified data file path.
@@ -24,6 +24,12 @@ public class Yao {
     public Yao(String filePath) {
         this.ui = new Ui();
         this.storage = new Storage(filePath);
+        try {
+            this.tasks = new TaskList(storage.load());
+        } catch (YaoException e) {
+            ui.showLoadingError(e.getMessage());
+            this.tasks = new TaskList();
+        }
     }
 
     /**
@@ -38,14 +44,6 @@ public class Yao {
      */
     public void run() {
         ui.showWelcome();
-
-        ArrayList<Task> tasks;
-        try {
-            tasks = storage.load();
-        } catch (YaoException e) {
-            ui.showLoadingError(e.getMessage());
-            tasks = new ArrayList<>();
-        }
 
         while (true) {
             String command = ui.readCommand();
@@ -99,7 +97,7 @@ public class Yao {
                         if (taskIndex < 0 || taskIndex >= tasks.size()) {
                             throw new YaoException("OOPS!!! Task number is out of range.");
                         }
-                        Task removedTask = tasks.remove(taskIndex);
+                        Task removedTask = tasks.delete(taskIndex);
                         storage.save(tasks);
                         ui.showTaskDeleted(removedTask, tasks.size());
                     } catch (NumberFormatException e) {

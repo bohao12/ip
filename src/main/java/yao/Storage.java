@@ -121,6 +121,16 @@ public class Storage {
     }
 
     /**
+     * Saves the current tasks from a TaskList to the storage file on disk.
+     *
+     * @param tasks The TaskList containing tasks to save.
+     * @throws YaoException If an I/O error occurs while writing to the file.
+     */
+    public void save(TaskList tasks) throws YaoException {
+        save(tasks.getTasks());
+    }
+
+    /**
      * Saves the current tasks to the storage file on disk.
      * Creates any missing parent directories automatically.
      *

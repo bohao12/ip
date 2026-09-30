@@ -64,14 +64,23 @@ public class Ui {
     /**
      * Displays the list of tasks currently recorded.
      *
-     * @param tasks The list of tasks to display.
+     * @param tasks The TaskList to display.
      */
-    public void showTaskList(ArrayList<Task> tasks) {
+    public void showTaskList(TaskList tasks) {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println((i + 1) + "." + tasks.get(i));
         }
         showLine();
+    }
+
+    /**
+     * Displays the list of tasks currently recorded.
+     *
+     * @param tasks The list of tasks to display.
+     */
+    public void showTaskList(ArrayList<Task> tasks) {
+        showTaskList(new TaskList(tasks));
     }
 
     /**
