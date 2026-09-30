@@ -9,6 +9,12 @@ import yao.Ui;
  */
 public class ListCommand extends Command {
 
+    /**
+     * Constructs a ListCommand instance.
+     */
+    public ListCommand() {
+    }
+
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         ui.showTaskList(tasks);

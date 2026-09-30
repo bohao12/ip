@@ -12,6 +12,12 @@ import yao.YaoException;
 public abstract class Command {
 
     /**
+     * Constructs a Command instance.
+     */
+    public Command() {
+    }
+
+    /**
      * Executes the command using the provided task list, user interface, and storage.
      *
      * @param tasks The active task list.

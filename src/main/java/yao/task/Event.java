@@ -4,7 +4,9 @@ package yao.task;
  * Represents an event task with a start time and an end time.
  */
 public class Event extends Task {
+    /** Start date/time string of the event. */
     protected String from;
+    /** End date/time string of the event. */
     protected String to;
 
     /**

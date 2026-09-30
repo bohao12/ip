@@ -4,6 +4,7 @@ import yao.command.AddCommand;
 import yao.command.Command;
 import yao.command.DeleteCommand;
 import yao.command.ExitCommand;
+import yao.command.FindCommand;
 import yao.command.ListCommand;
 import yao.command.MarkCommand;
 import yao.command.UnmarkCommand;
@@ -15,6 +16,12 @@ import yao.task.Todo;
  * Parses user input strings into executable Command objects.
  */
 public class Parser {
+
+    /**
+     * Prevents instantiation of this utility class.
+     */
+    private Parser() {
+    }
 
     /**
      * Parses a raw user input command line into a corresponding Command object.
@@ -34,6 +41,8 @@ public class Parser {
             return parseUnmarkCommand(fullCommand);
         } else if (fullCommand.equals("delete") || fullCommand.startsWith("delete ")) {
             return parseDeleteCommand(fullCommand);
+        } else if (fullCommand.equals("find") || fullCommand.startsWith("find ")) {
+            return parseFindCommand(fullCommand);
         } else if (fullCommand.equals("todo") || fullCommand.startsWith("todo ")) {
             return parseTodoCommand(fullCommand);
         } else if (fullCommand.equals("deadline") || fullCommand.startsWith("deadline ")) {
@@ -45,6 +54,28 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses a find command string into a FindCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return A FindCommand with the extracted search keyword.
+     * @throws YaoException If the keyword is missing or empty.
+     */
+    private static Command parseFindCommand(String fullCommand) throws YaoException {
+        String keyword = fullCommand.substring(4).trim();
+        if (keyword.isEmpty()) {
+            throw new YaoException("OOPS!!! The search keyword cannot be empty.");
+        }
+        return new FindCommand(keyword);
+    }
+
+    /**
+     * Parses a mark command string into a MarkCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return A MarkCommand targeting the specified task index.
+     * @throws YaoException If the index argument is missing or not a valid number.
+     */
     private static Command parseMarkCommand(String fullCommand) throws YaoException {
         String arg = fullCommand.substring(4).trim();
         if (arg.isEmpty()) {
@@ -58,6 +89,13 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses an unmark command string into an UnmarkCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return An UnmarkCommand targeting the specified task index.
+     * @throws YaoException If the index argument is missing or not a valid number.
+     */
     private static Command parseUnmarkCommand(String fullCommand) throws YaoException {
         String arg = fullCommand.substring(6).trim();
         if (arg.isEmpty()) {
@@ -71,6 +109,13 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses a delete command string into a DeleteCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return A DeleteCommand targeting the specified task index.
+     * @throws YaoException If the index argument is missing or not a valid number.
+     */
     private static Command parseDeleteCommand(String fullCommand) throws YaoException {
         String arg = fullCommand.substring(6).trim();
         if (arg.isEmpty()) {
@@ -84,6 +129,13 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses a todo command string into an AddCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return An AddCommand containing the new Todo task.
+     * @throws YaoException If the task description is empty.
+     */
     private static Command parseTodoCommand(String fullCommand) throws YaoException {
         String description = fullCommand.substring(4).trim();
         if (description.isEmpty()) {
@@ -92,6 +144,13 @@ public class Parser {
         return new AddCommand(new Todo(description));
     }
 
+    /**
+     * Parses a deadline command string into an AddCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return An AddCommand containing the new Deadline task.
+     * @throws YaoException If the description or deadline limit is missing.
+     */
     private static Command parseDeadlineCommand(String fullCommand) throws YaoException {
         String details = fullCommand.substring(8).trim();
         if (details.isEmpty()) {
@@ -109,6 +168,13 @@ public class Parser {
         return new AddCommand(new Deadline(description, by));
     }
 
+    /**
+     * Parses an event command string into an AddCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @return An AddCommand containing the new Event task.
+     * @throws YaoException If the description, start time, or end time is missing.
+     */
     private static Command parseEventCommand(String fullCommand) throws YaoException {
         String details = fullCommand.substring(5).trim();
         if (details.isEmpty()) {

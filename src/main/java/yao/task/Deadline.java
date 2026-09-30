@@ -4,6 +4,7 @@ package yao.task;
  * Represents a task that needs to be done before a specific date/time.
  */
 public class Deadline extends Task {
+    /** Due date/time string for the deadline. */
     protected String by;
 
     /**

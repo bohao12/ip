@@ -5,7 +5,9 @@ package yao.task;
  * Serves as the superclass for specific task types such as Todo, Deadline, and Event.
  */
 public class Task {
+    /** Description of the task. */
     protected String description;
+    /** Completion status flag of the task. */
     protected boolean isDone;
 
     /**
@@ -17,6 +19,15 @@ public class Task {
     public Task(String description) {
         this.description = description;
         this.isDone = false;
+    }
+
+    /**
+     * Returns the description of this task.
+     *
+     * @return The task description.
+     */
+    public String getDescription() {
+        return description;
     }
 
     /**

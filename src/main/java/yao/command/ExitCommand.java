@@ -9,6 +9,12 @@ import yao.Ui;
  */
 public class ExitCommand extends Command {
 
+    /**
+     * Constructs an ExitCommand instance.
+     */
+    public ExitCommand() {
+    }
+
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         ui.showGoodbye();

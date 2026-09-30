@@ -82,6 +82,18 @@ public class Ui {
     }
 
     /**
+     * Displays the matching tasks found from a keyword search.
+     *
+     * @param matchingTasks The list of tasks matching the keyword.
+     */
+    public void showMatchingTasks(ArrayList<Task> matchingTasks) {
+        System.out.println("Here are the matching tasks in your list:");
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println((i + 1) + "." + matchingTasks.get(i));
+        }
+    }
+
+    /**
      * Displays confirmation that a task was marked as done.
      *
      * @param task The task that was marked done.
