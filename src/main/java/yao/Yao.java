@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import yao.task.Deadline;
 import yao.task.Event;
 import yao.task.Task;
@@ -14,50 +13,41 @@ import yao.task.Todo;
 
 /**
  * Main class for the Yao chatbot application.
- * Manages user interactions, task list operations, and file storage.
+ * Coordinates user interactions, task list operations, and file storage.
  */
 public class Yao {
-    private static final String BORDER_LINE = "____________________________________________________________";
-    private static final String BANNER = " __   __            \n"
-            + " \\ \\ / /_ _  ___   \n"
-            + "  \\ V / _` |/ _ \\  \n"
-            + "   | | (_| | (_) | \n"
-            + "   |_|\\__,_|\\___/  \n";
     private static final String DATA_DIRECTORY = "data";
     private static final String DATA_FILE = "Yao.txt";
     private static final Path FILE_PATH = Paths.get(DATA_DIRECTORY, DATA_FILE);
 
-    /**
-     * Main entry point for the Yao chatbot application.
-     *
-     * @param args Command line arguments.
-     */
-    public static void main(String[] args) {
-        System.out.println(BORDER_LINE);
-        System.out.print(BANNER);
-        System.out.println("Hello! I'm Yao.");
-        System.out.println("What can I do for you?");
-        System.out.println(BORDER_LINE);
+    private final Ui ui;
 
-        Scanner scanner = new Scanner(System.in);
+    /**
+     * Initializes the Yao application and its user interface.
+     */
+    public Yao() {
+        this.ui = new Ui();
+    }
+
+    /**
+     * Runs the main command processing loop for the Yao chatbot.
+     */
+    public void run() {
+        ui.showWelcome();
+
         ArrayList<Task> tasks = new ArrayList<>();
         loadTasks(tasks);
 
         while (true) {
-            String command = scanner.nextLine();
-            System.out.println(BORDER_LINE);
+            String command = ui.readCommand();
+            ui.showLine();
 
             try {
                 if (command.equals("bye")) {
-                    System.out.println("Bye. Hope to see you again soon!");
-                    System.out.println(BORDER_LINE);
+                    ui.showGoodbye();
                     break;
                 } else if (command.equals("list")) {
-                    System.out.println("Here are the tasks in your list:");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        System.out.println((i + 1) + "." + tasks.get(i));
-                    }
-                    System.out.println(BORDER_LINE);
+                    ui.showTaskList(tasks);
                 } else if (command.equals("mark") || command.startsWith("mark ")) {
                     String arg = command.substring(4).trim();
                     if (arg.isEmpty()) {
@@ -70,9 +60,7 @@ public class Yao {
                         }
                         tasks.get(taskIndex).markAsDone();
                         saveTasks(tasks);
-                        System.out.println("Nice! I've marked this task as done:");
-                        System.out.println("  " + tasks.get(taskIndex));
-                        System.out.println(BORDER_LINE);
+                        ui.showTaskMarked(tasks.get(taskIndex));
                     } catch (NumberFormatException e) {
                         throw new YaoException("OOPS!!! Task index must be a valid number.");
                     }
@@ -88,9 +76,7 @@ public class Yao {
                         }
                         tasks.get(taskIndex).markAsUndone();
                         saveTasks(tasks);
-                        System.out.println("OK, I've marked this task as not done yet:");
-                        System.out.println("  " + tasks.get(taskIndex));
-                        System.out.println(BORDER_LINE);
+                        ui.showTaskUnmarked(tasks.get(taskIndex));
                     } catch (NumberFormatException e) {
                         throw new YaoException("OOPS!!! Task index must be a valid number.");
                     }
@@ -106,10 +92,7 @@ public class Yao {
                         }
                         Task removedTask = tasks.remove(taskIndex);
                         saveTasks(tasks);
-                        System.out.println("Noted. I've removed this task:");
-                        System.out.println("  " + removedTask);
-                        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                        System.out.println(BORDER_LINE);
+                        ui.showTaskDeleted(removedTask, tasks.size());
                     } catch (NumberFormatException e) {
                         throw new YaoException("OOPS!!! Task index must be a valid number.");
                     }
@@ -121,10 +104,7 @@ public class Yao {
                     Task newTask = new Todo(description);
                     tasks.add(newTask);
                     saveTasks(tasks);
-                    System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + newTask);
-                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println(BORDER_LINE);
+                    ui.showTaskAdded(newTask, tasks.size());
                 } else if (command.equals("deadline") || command.startsWith("deadline ")) {
                     String details = command.substring(8).trim();
                     if (details.isEmpty()) {
@@ -142,10 +122,7 @@ public class Yao {
                     Task newTask = new Deadline(description, by);
                     tasks.add(newTask);
                     saveTasks(tasks);
-                    System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + newTask);
-                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println(BORDER_LINE);
+                    ui.showTaskAdded(newTask, tasks.size());
                 } else if (command.equals("event") || command.startsWith("event ")) {
                     String details = command.substring(5).trim();
                     if (details.isEmpty()) {
@@ -168,18 +145,23 @@ public class Yao {
                     Task newTask = new Event(description, from, to);
                     tasks.add(newTask);
                     saveTasks(tasks);
-                    System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + newTask);
-                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println(BORDER_LINE);
+                    ui.showTaskAdded(newTask, tasks.size());
                 } else {
                     throw new YaoException("OOPS!!! I'm sorry, but I don't know what that means :-(");
                 }
             } catch (YaoException e) {
-                System.out.println(" " + e.getMessage());
-                System.out.println(BORDER_LINE);
+                ui.showError(e.getMessage());
             }
         }
+    }
+
+    /**
+     * Main entry point for the Yao chatbot application.
+     *
+     * @param args Command line arguments.
+     */
+    public static void main(String[] args) {
+        new Yao().run();
     }
 
     /**
