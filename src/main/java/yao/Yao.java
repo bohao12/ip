@@ -1,11 +1,6 @@
 package yao;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import yao.task.Deadline;
 import yao.task.Event;
 import yao.task.Task;
@@ -16,17 +11,26 @@ import yao.task.Todo;
  * Coordinates user interactions, task list operations, and file storage.
  */
 public class Yao {
-    private static final String DATA_DIRECTORY = "data";
-    private static final String DATA_FILE = "Yao.txt";
-    private static final Path FILE_PATH = Paths.get(DATA_DIRECTORY, DATA_FILE);
+    private static final String DEFAULT_FILE_PATH = "data/Yao.txt";
 
+    private final Storage storage;
     private final Ui ui;
 
     /**
-     * Initializes the Yao application and its user interface.
+     * Initializes the Yao application with a specified data file path.
+     *
+     * @param filePath Relative or absolute path to the data storage file.
+     */
+    public Yao(String filePath) {
+        this.ui = new Ui();
+        this.storage = new Storage(filePath);
+    }
+
+    /**
+     * Initializes the Yao application using the default data file path.
      */
     public Yao() {
-        this.ui = new Ui();
+        this(DEFAULT_FILE_PATH);
     }
 
     /**
@@ -35,8 +39,13 @@ public class Yao {
     public void run() {
         ui.showWelcome();
 
-        ArrayList<Task> tasks = new ArrayList<>();
-        loadTasks(tasks);
+        ArrayList<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (YaoException e) {
+            ui.showLoadingError(e.getMessage());
+            tasks = new ArrayList<>();
+        }
 
         while (true) {
             String command = ui.readCommand();
@@ -59,7 +68,7 @@ public class Yao {
                             throw new YaoException("OOPS!!! Task number is out of range.");
                         }
                         tasks.get(taskIndex).markAsDone();
-                        saveTasks(tasks);
+                        storage.save(tasks);
                         ui.showTaskMarked(tasks.get(taskIndex));
                     } catch (NumberFormatException e) {
                         throw new YaoException("OOPS!!! Task index must be a valid number.");
@@ -75,7 +84,7 @@ public class Yao {
                             throw new YaoException("OOPS!!! Task number is out of range.");
                         }
                         tasks.get(taskIndex).markAsUndone();
-                        saveTasks(tasks);
+                        storage.save(tasks);
                         ui.showTaskUnmarked(tasks.get(taskIndex));
                     } catch (NumberFormatException e) {
                         throw new YaoException("OOPS!!! Task index must be a valid number.");
@@ -91,7 +100,7 @@ public class Yao {
                             throw new YaoException("OOPS!!! Task number is out of range.");
                         }
                         Task removedTask = tasks.remove(taskIndex);
-                        saveTasks(tasks);
+                        storage.save(tasks);
                         ui.showTaskDeleted(removedTask, tasks.size());
                     } catch (NumberFormatException e) {
                         throw new YaoException("OOPS!!! Task index must be a valid number.");
@@ -103,7 +112,7 @@ public class Yao {
                     }
                     Task newTask = new Todo(description);
                     tasks.add(newTask);
-                    saveTasks(tasks);
+                    storage.save(tasks);
                     ui.showTaskAdded(newTask, tasks.size());
                 } else if (command.equals("deadline") || command.startsWith("deadline ")) {
                     String details = command.substring(8).trim();
@@ -121,7 +130,7 @@ public class Yao {
                     String by = parts[1].trim();
                     Task newTask = new Deadline(description, by);
                     tasks.add(newTask);
-                    saveTasks(tasks);
+                    storage.save(tasks);
                     ui.showTaskAdded(newTask, tasks.size());
                 } else if (command.equals("event") || command.startsWith("event ")) {
                     String details = command.substring(5).trim();
@@ -144,7 +153,7 @@ public class Yao {
                     String to = timeParts[1].trim();
                     Task newTask = new Event(description, from, to);
                     tasks.add(newTask);
-                    saveTasks(tasks);
+                    storage.save(tasks);
                     ui.showTaskAdded(newTask, tasks.size());
                 } else {
                     throw new YaoException("OOPS!!! I'm sorry, but I don't know what that means :-(");
@@ -161,120 +170,6 @@ public class Yao {
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
-        new Yao().run();
-    }
-
-    /**
-     * Loads tasks from the storage file on disk.
-     * If the file or directory does not exist, starts with an empty list.
-     * Corrupted lines are skipped gracefully.
-     *
-     * @param tasks The ArrayList to populate with loaded tasks.
-     */
-    private static void loadTasks(ArrayList<Task> tasks) {
-        if (!Files.exists(FILE_PATH)) {
-            return;
-        }
-
-        try {
-            List<String> lines = Files.readAllLines(FILE_PATH);
-            for (String line : lines) {
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-                Task task = parseTaskFromLine(line);
-                if (task != null) {
-                    tasks.add(task);
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Warning: Unable to read data file: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Parses a single line from the storage file into a Task object.
-     *
-     * @param line A line from the storage file.
-     * @return The parsed Task, or null if the line is corrupted.
-     */
-    private static Task parseTaskFromLine(String line) {
-        String[] parts = line.split("\\|");
-        for (int i = 0; i < parts.length; i++) {
-            parts[i] = parts[i].trim();
-        }
-
-        if (parts.length < 3) {
-            System.out.println("Warning: Skipping corrupted line in data file: " + line);
-            return null;
-        }
-
-        String type = parts[0];
-        String isDoneStr = parts[1];
-        String description = parts[2];
-
-        if (!isDoneStr.equals("0") && !isDoneStr.equals("1")) {
-            System.out.println("Warning: Skipping corrupted status in data file: " + line);
-            return null;
-        }
-
-        boolean isDone = isDoneStr.equals("1");
-        Task task;
-
-        switch (type) {
-        case "T":
-            task = new Todo(description);
-            break;
-        case "D":
-            if (parts.length < 4) {
-                System.out.println("Warning: Skipping corrupted deadline line: " + line);
-                return null;
-            }
-            task = new Deadline(description, parts[3]);
-            break;
-        case "E":
-            if (parts.length < 4) {
-                System.out.println("Warning: Skipping corrupted event line: " + line);
-                return null;
-            }
-            String from = parts[3];
-            String to = parts.length > 4 ? parts[4] : "";
-            task = new Event(description, from, to);
-            break;
-        case "TASK":
-            task = new Task(description);
-            break;
-        default:
-            System.out.println("Warning: Skipping unrecognized task type in data file: " + line);
-            return null;
-        }
-
-        if (isDone) {
-            task.markAsDone();
-        }
-        return task;
-    }
-
-    /**
-     * Saves the current tasks to the storage file on disk.
-     * Automatically creates the parent directory if it does not exist.
-     *
-     * @param tasks The list containing active tasks.
-     */
-    private static void saveTasks(ArrayList<Task> tasks) {
-        try {
-            Path parentDir = FILE_PATH.getParent();
-            if (parentDir != null && !Files.exists(parentDir)) {
-                Files.createDirectories(parentDir);
-            }
-
-            List<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toFileFormat());
-            }
-            Files.write(FILE_PATH, lines);
-        } catch (IOException e) {
-            System.out.println("Warning: Unable to save tasks to file: " + e.getMessage());
-        }
+        new Yao("data/Yao.txt").run();
     }
 }
