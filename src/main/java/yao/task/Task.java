@@ -66,4 +66,14 @@ public class Task {
     public String toFileFormat() {
         return "TASK | " + (isDone ? "1" : "0") + " | " + description;
     }
+
+    /**
+     * Checks if this task occurs on the specified date.
+     *
+     * @param date The date to check against.
+     * @return True if the task occurs on the specified date, false otherwise.
+     */
+    public boolean isOnDate(java.time.LocalDate date) {
+        return false;
+    }
 }

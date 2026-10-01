@@ -95,7 +95,12 @@ public class Storage {
                 System.out.println("Warning: Skipping corrupted deadline line: " + line);
                 return null;
             }
-            task = new Deadline(description, parts[3]);
+            try {
+                task = new Deadline(description, parts[3]);
+            } catch (YaoException e) {
+                System.out.println("Warning: Skipping deadline with invalid date in data file: " + line);
+                return null;
+            }
             break;
         case "E":
             if (parts.length < 4) {

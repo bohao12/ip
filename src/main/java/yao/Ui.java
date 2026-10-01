@@ -94,6 +94,24 @@ public class Ui {
     }
 
     /**
+     * Displays tasks occurring on a specified date.
+     *
+     * @param tasks The list of matching tasks.
+     * @param date The date filtered by.
+     */
+    public void showTasksOnDate(ArrayList<Task> tasks, java.time.LocalDate date) {
+        String formattedDate = DateTimeUtil.formatDate(date);
+        if (tasks.isEmpty()) {
+            System.out.println("No deadlines or events found on " + formattedDate + ".");
+            return;
+        }
+        System.out.println("Here are the tasks occurring on " + formattedDate + ":");
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println((i + 1) + "." + tasks.get(i));
+        }
+    }
+
+    /**
      * Displays confirmation that a task was marked as done.
      *
      * @param task The task that was marked done.
