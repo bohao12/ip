@@ -88,4 +88,20 @@ public class TaskList {
         }
         return matchingTasks;
     }
+
+    /**
+     * Searches for tasks occurring on the specified date.
+     *
+     * @param date The date to filter tasks by.
+     * @return An ArrayList containing all matching Task objects.
+     */
+    public ArrayList<Task> findTasksOnDate(java.time.LocalDate date) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.isOnDate(date)) {
+                matchingTasks.add(task);
+            }
+        }
+        return matchingTasks;
+    }
 }

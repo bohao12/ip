@@ -1,7 +1,9 @@
 package yao;
 
+import java.time.LocalDate;
 import yao.command.AddCommand;
 import yao.command.Command;
+import yao.command.DateFilterCommand;
 import yao.command.DeleteCommand;
 import yao.command.ExitCommand;
 import yao.command.FindCommand;
@@ -43,6 +45,10 @@ public class Parser {
             return parseDeleteCommand(fullCommand);
         } else if (fullCommand.equals("find") || fullCommand.startsWith("find ")) {
             return parseFindCommand(fullCommand);
+        } else if (fullCommand.equals("on") || fullCommand.startsWith("on ")) {
+            return parseDateFilterCommand(fullCommand, "on");
+        } else if (fullCommand.equals("date") || fullCommand.startsWith("date ")) {
+            return parseDateFilterCommand(fullCommand, "date");
         } else if (fullCommand.equals("todo") || fullCommand.startsWith("todo ")) {
             return parseTodoCommand(fullCommand);
         } else if (fullCommand.equals("deadline") || fullCommand.startsWith("deadline ")) {
@@ -67,6 +73,23 @@ public class Parser {
             throw new YaoException("OOPS!!! The search keyword cannot be empty.");
         }
         return new FindCommand(keyword);
+    }
+
+    /**
+     * Parses a date query command string into a DateFilterCommand.
+     *
+     * @param fullCommand The raw command string.
+     * @param prefix The command prefix used ("on" or "date").
+     * @return A DateFilterCommand targeting the parsed date.
+     * @throws YaoException If the date argument is missing or invalid.
+     */
+    private static Command parseDateFilterCommand(String fullCommand, String prefix) throws YaoException {
+        String dateStr = fullCommand.substring(prefix.length()).trim();
+        if (dateStr.isEmpty()) {
+            throw new YaoException("OOPS!!! Please specify a date to search for (e.g. on 2019-10-15).");
+        }
+        LocalDate date = DateTimeUtil.parseDate(dateStr);
+        return new DateFilterCommand(date);
     }
 
     /**
